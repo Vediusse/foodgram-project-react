@@ -35,17 +35,27 @@ class CustomUserCreateSerializer(UserCreateSerializer):
         fields = (
             "email",
             "username",
+            "first_name",
+            "last_name",
             "password",
         )
 
 
+class SubscribeRecipeSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ("id", "name", "image", "cooking_time")
+
+
 class SubscribeSerializer(serializers.ModelSerializer):
     username = serializers.ReadOnlyField(source="subscribed.username")
+    id = serializers.ReadOnlyField(source="subscribed.id")
     email = serializers.ReadOnlyField(source="subscribed.email")
     first_name = serializers.ReadOnlyField(source="subscribed.first_name")
     last_name = serializers.ReadOnlyField(source="subscribed.last_name")
     is_subscribed = serializers.SerializerMethodField()
     recipes = SerializerMethodField()
+    recipes_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Subscribers
@@ -57,6 +67,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
             "last_name",
             "is_subscribed",
             "recipes",
+            "recipes_count",
         )
 
     def get_is_subscribed(self, subscribes):
@@ -69,13 +80,7 @@ class SubscribeSerializer(serializers.ModelSerializer):
 
     def get_recipes(self, subscribers):
         recipes = Recipe.objects.filter(author=subscribers.subscribed)
-        recipes_list = []
-        for recipe in recipes:
-            recipes_list.append(
-                {
-                    "id": recipe.id,
-                    "name": recipe.name,
-                    "image": recipe.image,
-                    "cooking_time": recipe.cooking_time,
-                }
-            )
+        return SubscribeRecipeSerializer(recipes, many=True).data
+
+    def get_recipes_count(self, obj):
+        return Recipe.objects.filter(author=obj.subscribed).count()

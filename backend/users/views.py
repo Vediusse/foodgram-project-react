@@ -11,9 +11,6 @@ from django.conf import settings
 
 
 class SubscribesViewSet(UserViewSet):
-    permission_classes = (IsAuthenticated,)
-    pagination_class = LimitOffsetPagination
-
     @action(detail=True, methods=["post"], permission_classes=[IsAuthenticated])
     def subscribe(self, request, id=None):
         user = request.user
@@ -34,10 +31,36 @@ class SubscribesViewSet(UserViewSet):
         serializer = SubscribeSerializer(subscribe, context={"request": request})
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @action(detail=False, permission_classes=[IsAuthenticated])
+    @action(detail=False, methods=["get"], permission_classes=[IsAuthenticated])
     def subscriptions(self, request):
         user = request.user
         queryset = Subscribers.objects.filter(user=user)
-        pages = self.paginate_queryset(queryset)
-        serializer = SubscribeSerializer(pages, many=True, context={"request": request})
-        return self.get_paginated_response(serializer.data)
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = SubscribeSerializer(
+                page, many=True, context={"request": request}
+            )
+            return self.get_paginated_response(serializer.data)
+
+        serializer = SubscribeSerializer(
+            queryset, many=True, context={"request": request}
+        )
+        return Response(serializer.data, status=status.HTTP_200_OK)
+
+    @subscribe.mapping.delete
+    def del_subscription(self, request, id=None):
+        user = request.user
+        author = get_object_or_404(User, id=id)
+        if user == author:
+            return Response(
+                {"errors": "Вы не можете отписываться от самого себя"},
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+        subscribe = Subscribers.objects.filter(user=user, subscribed=author)
+        if subscribe.exists():
+            subscribe.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+
+        return Response(
+            {"errors": "Вы уже отписались"}, status=status.HTTP_400_BAD_REQUEST
+        )
