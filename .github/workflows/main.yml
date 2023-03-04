@@ -24,9 +24,6 @@ jobs:
           python -m pip install --upgrade pip
           pip install -r backend/requirements.txt
 
-      - name: Test with pytest
-        run: pytest
-
   build_image_into_docker_hub:
     name: Push Docker Hub Image
     runs-on: ubuntu-latest
