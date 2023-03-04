@@ -142,7 +142,7 @@ http://localhost:8000/api/recipes/10/
     ],
     "image": "http://localhost:8000/media/recipes/images/ddd6b491-97eb-4d1a-ab4c-ac86c73d0df5.png",
     "name": "SDGSDGSDGSDG",
-    "text": "крутой супец",
+    "text": "крутой супе",
     "cooking_time": 1,
     "author": {
         "id": 1,
