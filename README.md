@@ -147,7 +147,7 @@ http://localhost:8000/api/recipes/10/
     "author": {
         "id": 1,
         "username": "fjjfgaafffacccxszxcggggg",
-        "email": "vpupkin@yandex.ru1111",
+        "email": "vpupkin@yandex.ru111",
         "first_name": "",
         "last_name": "",
         "is_subscribed": false
